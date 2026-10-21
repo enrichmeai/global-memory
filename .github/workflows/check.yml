@@ -33,7 +33,7 @@ jobs:
       - name: Run every pattern's check.sh
         run: |
           set -e
-          for c in patterns/*/check.sh; do
+          for c in patterns/*/*/check.sh; do
             echo "::group::$c"
             sh "$c"
             echo "::endgroup::"
@@ -48,11 +48,23 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: enrichmeai/penstock
+          ref: v0.5.3          # pinned: a Penstock change must not break this repository's CI unannounced
           path: penstock
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - name: Validate cards against memory format v1 (Penstock's checker)
+        # Schema validation is what this job is for. Penstock's checker reads patterns/<id>/, so it
+        # is given a flattened copy until it reads category folders (penstock#195). It also re-runs
+        # each check.sh with no Java, Terraform or Docker here: those lines are SKIPs and prove
+        # nothing; the "patterns" job is where the checks really run. Its STALE lines compare
+        # verified-against with Penstock's own release tag, which does not apply here (penstock#195).
         run: |
-          pip install pyyaml jsonschema
-          bash penstock/scripts/check-cards.sh --root "$GITHUB_WORKSPACE/global-memory"
+          pip install pyyaml
+          flat="$RUNNER_TEMP/flat"
+          mkdir -p "$flat/patterns" "$flat/scripts"
+          cp global-memory/memory.yaml "$flat/"
+          cp -R global-memory/scripts/. "$flat/scripts/"
+          for d in global-memory/patterns/*/*/; do cp -R "$d" "$flat/patterns/"; done
+          for c in "$flat"/patterns/*/check.sh; do sed -i 's#\.\./\.\./\.\./scripts#../../scripts#; s#\.\./\.\./language/#../#' "$c"; done
+          bash penstock/scripts/check-cards.sh --root "$flat"

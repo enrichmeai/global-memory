@@ -7,6 +7,10 @@ and a `check.sh` that says when the result works. With that in hand, a small or 
 build and deploy a service by copying the skeleton, changing what varies, and running the check.
 It doesn't have to work everything out from scratch.
 
+A pattern is model-neutral: it records decisions, files and a check, never prompt wording. So one
+pattern serves any model and any agent (Penstock, Claude Code, any MCP client, or a person),
+instead of a separate "skill" kept per tool.
+
 Global memory is the shared, public tier of an agent's memory. It sits beside your own (estate)
 and your project's. A narrower tier wins: your project's pattern for the same job overrides the
 global one. [Penstock](https://github.com/enrichmeai/penstock) loads these patterns on demand
@@ -17,17 +21,17 @@ read them; each one is plain files.
 
 Pick one layer from each row and they compose:
 
-| Row | Available now |
-|---|---|
-| Language and framework | [`java21-spring-boot`](patterns/java21-spring-boot/) |
-| Architecture | [`rest-service`](patterns/rest-service/) (on top of a language layer) |
-| Cloud platform | [`gcp-cloud-run`](patterns/gcp-cloud-run/) |
-| CI | none yet (next) |
+| Category | Folder | Available now |
+|---|---|---|
+| Language and framework | `patterns/language/` | [`java21-spring-boot`](patterns/language/java21-spring-boot/) |
+| Architecture | `patterns/architecture/` | [`rest-service`](patterns/architecture/rest-service/) (on top of a language layer) |
+| Cloud platform | `patterns/cloud/` | [`gcp-cloud-run`](patterns/cloud/gcp-cloud-run/) |
+| CI | `patterns/ci/` | none yet (next) |
 
-Each pattern is a directory:
+Every pattern sits in exactly one category folder, and its id is unique across all of them:
 
 ```
-patterns/<id>/
+patterns/<category>/<id>/
   PATTERN.md      when it applies, when it does not, the decisions and why, what varies per use
   manifest.yaml   id, version, triggers, signatures, inputs, verified-against {tag, date}
   skeleton/       the files, with real defaults; PATTERN.md lists what to rename
@@ -46,10 +50,10 @@ patterns/<id>/
 ## Using a pattern by hand
 
 ```sh
-cp -R patterns/java21-spring-boot/skeleton/. my-service/
-cp -R patterns/rest-service/skeleton/.       my-service/
-cp patterns/gcp-cloud-run/skeleton/Dockerfile patterns/gcp-cloud-run/skeleton/.dockerignore my-service/
-cp -R patterns/gcp-cloud-run/skeleton/infra   my-service/
+cp -R patterns/language/java21-spring-boot/skeleton/. my-service/
+cp -R patterns/architecture/rest-service/skeleton/. my-service/
+cp patterns/cloud/gcp-cloud-run/skeleton/Dockerfile patterns/cloud/gcp-cloud-run/skeleton/.dockerignore my-service/
+cp -R patterns/cloud/gcp-cloud-run/skeleton/infra my-service/
 ```
 
 Then follow each `PATTERN.md`'s "What varies per use".

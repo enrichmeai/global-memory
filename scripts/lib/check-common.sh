@@ -4,6 +4,9 @@ status=0
 
 credential_grep() {
     echo "[credential-grep] $1"
+    if [ ! -d "$1" ]; then
+        echo "FAIL: no such directory"; status=1; return 0
+    fi
     # Known key prefixes anywhere, or a quoted literal of real length assigned to a password, token or secret.
     if grep -rEn '(sk-[A-Za-z0-9]{10,}|ghp_[A-Za-z0-9]{10,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{10,}|AIza[0-9A-Za-z_-]{20,}|-----BEGIN [A-Z ]*PRIVATE KEY-----|(password|token|secret)[[:space:]]*[:=][[:space:]]*"[^"<$[:space:]]{8,}")' "$1" 2>/dev/null; then
         echo "FAIL: a credential-shaped value"

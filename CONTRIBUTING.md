@@ -1,9 +1,12 @@
 # Adding a layer
 
-1. Pick the row (language, architecture, cloud or CI) and a short id (`[a-z0-9-]`).
+1. Pick the category folder (`patterns/language/`, `architecture/`, `cloud/` or `ci/`) and an id
+   (`[a-z0-9-]`) that is unique across all categories. Name it for what it is, most specific last:
+   `java21-spring-boot`, `gcp-cloud-run`, `github-actions-gradle`. A new category needs an issue first.
 2. Write `PATTERN.md`: when it applies, when it does not, each decision with its reason, and what varies.
 3. Put the files in `skeleton/` with working defaults. A layer that sits on another (`rest-service` on
-   `java21-spring-boot`) must work when both are copied into one directory.
+   `java21-spring-boot`) must work when both are copied into one directory, so no two layers that
+   combine may ship the same file.
 4. Write `check.sh` using `scripts/lib/check-common.sh`. It must fail on a broken skeleton:
    show that once (break a test, see FAIL) before opening the PR.
 5. Fill in `manifest.yaml`, with `verified-against` naming the versions you proved it with.

@@ -3,7 +3,7 @@
 # cannot run is reported as SKIP (not run), never as a pass.
 set -eu
 here=$(cd "$(dirname "$0")" && pwd)
-. "$here/../../scripts/lib/check-common.sh"
+. "$here/../../../scripts/lib/check-common.sh"
 
 credential_grep "$here/skeleton"
 

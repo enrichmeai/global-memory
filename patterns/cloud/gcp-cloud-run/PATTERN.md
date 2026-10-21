@@ -25,18 +25,31 @@ builds any Gradle Spring Boot service.
 - **Health from actuator:** startup and liveness probes on `/actuator/health/*`. The language layer
   enables the probe groups and reads `PORT`.
 - **Scaling bounds as variables:** `min_instances = 0` (scale to zero), with a ceiling against runaway cost.
+- **APIs enabled by Terraform** (`run`, `artifactregistry`, `secretmanager`, `iam`), so a fresh project works.
+- **Startup probe sized for a JVM:** up to 4 minutes (48 × 5 s) before the instance is given up on.
 
 ## What varies per use
 - `project_id`, `region`, `service_name`, `image` and `invokers`, in `terraform.tfvars` (not committed).
 - The secrets list, and the env var each one appears as.
 - The memory and CPU limits.
 
-## How to use it
-1. Build and push: `docker build -t REGION-docker.pkg.dev/PROJECT/REPO/SERVICE:TAG .` then `docker push`.
-2. `terraform init`, then `terraform apply` in `infra/`.
-3. Add each secret's value once, outside Terraform: `gcloud secrets versions add NAME --data-file=-`.
+## How to use it (first deploy)
+Cloud Run needs the image and each secret's value to exist before the service can start, so the
+first deploy has three steps. Later deploys are only steps 2 and 3, with a new image tag.
+
+1. **Bootstrap.** In `infra/`, run `terraform init`, then
+   `terraform apply -target=google_project_service.apis -target=google_artifact_registry_repository.images -target=google_secret_manager_secret.secret`.
+   This enables the APIs and creates the image repository and the (empty) secrets.
+2. **Fill them.**
+   - Add each secret's value once, outside Terraform: `printf %s "$VALUE" | gcloud secrets versions add NAME --data-file=-`.
+   - Build and push the image with `docker build --platform linux/amd64 -t REGION-docker.pkg.dev/PROJECT/SERVICE/SERVICE:TAG .`, then `docker push`.
+3. **Deploy.** `terraform apply`, with `image` set to that tag.
+
+`deletion_protection` defaults to true. Set it to false and apply before `terraform destroy`.
 
 ## Check
 `check.sh` runs `terraform fmt -check`, then `terraform init -backend=false` and `terraform validate`
-(both need the provider registry), then a `docker build` of the language layer with this Dockerfile.
+(both need the provider registry). It then builds the language layer with this Dockerfile and
+**runs** the image, checking that it runs as a non-root user, listens on `PORT`, and answers
+`/actuator/health/readiness` and `/liveness` with 200, which are the facts the Cloud Run probes rely on.
 Whatever this machine can't run is reported as SKIP. `GM_REQUIRE_ALL=1` (set in CI) turns a SKIP into a failure.

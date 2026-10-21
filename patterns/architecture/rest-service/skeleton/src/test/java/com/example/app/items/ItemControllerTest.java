@@ -42,10 +42,27 @@ class ItemControllerTest {
     }
 
     @Test
-    void aMissingItemIsA404Problem() throws Exception {
-        mvc.perform(get("/api/items/nope"))
+    void aMissingItemIsA404ProblemThatDoesNotEchoTheId() throws Exception {
+        mvc.perform(get("/api/items/nope-<script>"))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.type").value("urn:problem:not-found"));
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.type").value("urn:problem:not-found"))
+                // The message is fixed; only "instance", the request path RFC 9457 defines, carries it, URL-encoded.
+                .andExpect(jsonPath("$.detail").value("No item with that id."));
         mvc.perform(delete("/api/items/nope")).andExpect(status().isNotFound());
+    }
+
+    @Test
+    void malformedJsonIsA400Problem() throws Exception {
+        mvc.perform(post("/api/items").contentType(MediaType.APPLICATION_JSON).content("{not json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
+    }
+
+    @Test
+    void theWrongMethodIsA405Problem() throws Exception {
+        mvc.perform(put("/api/items"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON));
     }
 }
