@@ -20,6 +20,6 @@ inputs:
   - which principals may call it (private by default)
   - the secrets it needs, by name
 verified-against:
-  tag: terraform-1.9 fmt only so far; validate and container run pending the first CI run
+  tag: terraform-1.9.8 google-provider (>=6,<8) eclipse-temurin-21-jre; validate and container run green in CI on PR #1
   date: 2026-10-21
 supersedes: ~
