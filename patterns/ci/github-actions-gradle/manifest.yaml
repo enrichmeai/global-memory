@@ -1,0 +1,24 @@
+id: github-actions-gradle
+format: 1
+visibility: public
+version: 1
+triggers:
+  - ci
+  - github actions
+  - continuous integration
+  - pipeline
+  - gradle
+  - docker image
+  - ghcr
+  - pull request checks
+signatures:
+  - ".github/workflows/*.yml"
+  - ".github/scripts/smoke.sh"
+inputs:
+  - the default branch (main)
+  - the registry, if not GHCR
+  - the Java and Gradle versions (from the language layer)
+verified-against:
+  tag: actionlint-1.7.7 gradle-8.14 java-21 setup-gradle-v4 build-push-action-v6; check run locally (docker steps SKIP), CI pending
+  date: 2026-10-21
+supersedes: ~

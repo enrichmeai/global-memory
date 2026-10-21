@@ -26,7 +26,7 @@ Pick one layer from each row and they compose:
 | Language and framework | `patterns/language/` | [`java21-spring-boot`](patterns/language/java21-spring-boot/) |
 | Architecture | `patterns/architecture/` | [`rest-service`](patterns/architecture/rest-service/) (on top of a language layer) |
 | Cloud platform | `patterns/cloud/` | [`gcp-cloud-run`](patterns/cloud/gcp-cloud-run/) |
-| CI | `patterns/ci/` | none yet (next) |
+| CI | `patterns/ci/` | [`github-actions-gradle`](patterns/ci/github-actions-gradle/) |
 
 Every pattern sits in exactly one category folder, and its id is unique across all of them:
 
@@ -54,6 +54,7 @@ cp -R patterns/language/java21-spring-boot/skeleton/. my-service/
 cp -R patterns/architecture/rest-service/skeleton/. my-service/
 cp patterns/cloud/gcp-cloud-run/skeleton/Dockerfile patterns/cloud/gcp-cloud-run/skeleton/.dockerignore my-service/
 cp -R patterns/cloud/gcp-cloud-run/skeleton/infra my-service/
+cp -R patterns/ci/github-actions-gradle/skeleton/.github my-service/
 ```
 
 Then follow each `PATTERN.md`'s "What varies per use".

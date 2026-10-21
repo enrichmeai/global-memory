@@ -1,0 +1,112 @@
+# Every pull request: build and test, then build the image and boot it. Every push to main: the
+# same, and then push the image tagged sha-<commit>. A pull request never pushes anything.
+# The image job runs only when the repository has a Dockerfile (the gcp-cloud-run layer's).
+name: ci
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# A pull request's runs cancel each other; each push to main runs to the end, so every merged
+# commit gets its own image. Deploy by sha-<commit>, never by :main, which can lag if two runs
+# finish out of order.
+concurrency:
+  group: ci-${{ github.event_name == 'push' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      dockerfile: ${{ steps.layers.outputs.dockerfile }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # No wrapper in the language layer, so the Gradle version is pinned here. With a wrapper,
+      # drop gradle-version and run ./gradlew instead.
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14"
+
+      - name: Build and test
+        run: gradle --no-daemon build
+
+      - name: Keep the test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: build/reports/tests/test
+          retention-days: 7
+
+      # Runs only after a green build: on a failure the output stays unset and image is skipped.
+      - name: Which layers are present
+        id: layers
+        run: |
+          if [ -f Dockerfile ]; then echo "dockerfile=true" >> "$GITHUB_OUTPUT"; else echo "dockerfile=false" >> "$GITHUB_OUTPUT"; fi
+
+  image:
+    needs: build
+    if: needs.build.outputs.dockerfile == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      # The token can write packages on every run of this job, pull requests included; the main-only
+      # guards on the login and push steps are what stop a push, and check.sh pins them.
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      # Registry names must be lower case; an owner or repository name may not be.
+      - name: Image name
+        run: echo "IMAGE=ghcr.io/$(printf %s "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Cloud Run runs linux/amd64, so that is the one platform built.
+      - name: Build the image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          load: true
+          tags: ${{ env.IMAGE }}:smoke
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Boot it as shipped
+        run: sh .github/scripts/smoke.sh "${IMAGE}:smoke"
+
+      - name: Log in to GHCR
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # The image that passed the smoke test is retagged and pushed; nothing is rebuilt.
+      - name: Push sha-<commit> and main
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          docker tag "${IMAGE}:smoke" "${IMAGE}:sha-${GITHUB_SHA}"
+          docker tag "${IMAGE}:smoke" "${IMAGE}:main"
+          docker push "${IMAGE}:sha-${GITHUB_SHA}"
+          docker push "${IMAGE}:main"
+          echo "Pushed ${IMAGE}:sha-${GITHUB_SHA}" >> "$GITHUB_STEP_SUMMARY"
