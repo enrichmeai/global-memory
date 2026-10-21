@@ -35,14 +35,22 @@ builds any Gradle Spring Boot service.
 
 ## How to use it (first deploy)
 Cloud Run needs the image and each secret's value to exist before the service can start, so the
-first deploy has three steps. Later deploys are only steps 2 and 3, with a new image tag.
+first deploy has three steps. A later deploy only builds and pushes a new tag (step 2's second
+half) and applies it (step 3). Secrets are added once, and again only when one changes.
 
 1. **Bootstrap.** In `infra/`, run `terraform init`, then
    `terraform apply -target=google_project_service.apis -target=google_artifact_registry_repository.images -target=google_secret_manager_secret.secret`.
-   This enables the APIs and creates the image repository and the (empty) secrets.
+   This enables the APIs and creates the image repository and the (empty) secrets. On a brand-new
+   project, Terraform's own calls need the Service Usage API (and sometimes Cloud Resource Manager)
+   enabled first: `gcloud services enable serviceusage.googleapis.com cloudresourcemanager.googleapis.com`.
+   API enabling takes effect gradually, so a first apply that fails on a just-enabled API usually
+   passes when rerun a minute later.
 2. **Fill them.**
    - Add each secret's value once, outside Terraform: `printf %s "$VALUE" | gcloud secrets versions add NAME --data-file=-`.
-   - Build and push the image with `docker build --platform linux/amd64 -t REGION-docker.pkg.dev/PROJECT/SERVICE/SERVICE:TAG .`, then `docker push`.
+   - Let Docker push to Artifact Registry once: `gcloud auth configure-docker REGION-docker.pkg.dev`.
+   - Build and push the image (`terraform output image_repository` gives the repository):
+     `docker build --platform linux/amd64 -t REGION-docker.pkg.dev/PROJECT/SERVICE/SERVICE:TAG .`
+     then `docker push REGION-docker.pkg.dev/PROJECT/SERVICE/SERVICE:TAG`.
 3. **Deploy.** `terraform apply`, with `image` set to that tag.
 
 `deletion_protection` defaults to true. Set it to false and apply before `terraform destroy`.

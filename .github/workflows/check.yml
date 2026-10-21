@@ -55,10 +55,12 @@ jobs:
           python-version: "3.12"
       - name: Validate cards against memory format v1 (Penstock's checker)
         # Schema validation is what this job is for. Penstock's checker reads patterns/<id>/, so it
-        # is given a flattened copy until it reads category folders (penstock#195). It also re-runs
-        # each check.sh with no Java, Terraform or Docker here: those lines are SKIPs and prove
-        # nothing; the "patterns" job is where the checks really run. Its STALE lines compare
-        # verified-against with Penstock's own release tag, which does not apply here (penstock#195).
+        # is given a flattened copy until it reads category folders (penstock#195). The checker also
+        # calls each check.sh; GM_SCHEMA_ONLY=1 makes those skip their builds here, because the
+        # "patterns" job is where the checks really run. Its STALE lines compare verified-against with
+        # Penstock's own release tag, which does not apply here (penstock#195).
+        env:
+          GM_SCHEMA_ONLY: "1"
         run: |
           pip install pyyaml
           flat="$RUNNER_TEMP/flat"

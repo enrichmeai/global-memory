@@ -28,7 +28,9 @@ else
 fi
 
 echo "[terraform validate]"
-if command -v "$tf" >/dev/null 2>&1; then
+if [ "${GM_SCHEMA_ONLY:-0}" = "1" ]; then
+    echo "SKIP (schema-only run): terraform validate"
+elif command -v "$tf" >/dev/null 2>&1; then
     cp -R "$here/skeleton/infra/." "$tfwork/"
     if (cd "$tfwork" && "$tf" init -backend=false -input=false >"$tfwork/init.log" 2>&1); then
         if (cd "$tfwork" && "$tf" validate); then echo "PASS: terraform validate"; else echo "FAIL: terraform validate"; status=1; fi
@@ -44,7 +46,9 @@ else
 fi
 
 echo "[docker build and run]"
-if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
+if [ "${GM_SCHEMA_ONLY:-0}" = "1" ]; then
+    echo "SKIP (schema-only run): docker build and run"
+elif command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
     cp -R "$here/../../language/java21-spring-boot/skeleton/." "$work/"
     cp "$here/skeleton/Dockerfile" "$here/skeleton/.dockerignore" "$work/"
     if docker build -q -t global-memory-check:gcp-cloud-run "$work" >/dev/null; then
@@ -55,10 +59,10 @@ if command -v docker >/dev/null 2>&1 && docker info >/dev/null 2>&1; then
         ok=0
         i=0
         while [ $i -lt 60 ]; do
-            if curl -fs http://127.0.0.1:18181/actuator/health/readiness >/dev/null 2>&1; then ok=1; break; fi
+            if curl -fs --max-time 5 http://127.0.0.1:18181/actuator/health/readiness >/dev/null 2>&1; then ok=1; break; fi
             i=$((i + 1)); sleep 2
         done
-        if [ $ok -eq 1 ] && curl -fs http://127.0.0.1:18181/actuator/health/liveness >/dev/null; then
+        if [ $ok -eq 1 ] && curl -fs --max-time 5 http://127.0.0.1:18181/actuator/health/liveness >/dev/null; then
             echo "PASS: listens on PORT=8181 and answers readiness and liveness"
         else
             docker logs "$container" 2>&1 | tail -20

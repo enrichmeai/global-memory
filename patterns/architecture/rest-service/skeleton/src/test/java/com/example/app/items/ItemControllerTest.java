@@ -60,6 +60,14 @@ class ItemControllerTest {
     }
 
     @Test
+    void anUnknownRouteIsA404ProblemThatDoesNotEchoThePath() throws Exception {
+        mvc.perform(get("/nowhere/secret-path"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
+                .andExpect(jsonPath("$.detail").value("No such resource."));
+    }
+
+    @Test
     void theWrongMethodIsA405Problem() throws Exception {
         mvc.perform(put("/api/items"))
                 .andExpect(status().isMethodNotAllowed())

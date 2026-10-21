@@ -20,9 +20,9 @@ problem details, and tests that pin the contract. It sits on top of `java21-spri
   on the request. Invalid input is a 400 before any business code runs.
 - **Errors as problem details** (`ProblemDetail`, `application/problem+json`) from one
   `@RestControllerAdvice` that extends `ResponseEntityExceptionHandler`, so Spring MVC's own errors
-  (malformed JSON, wrong method or media type) are problems too. A missing item is a 404 with a
-  stable `type`, validation lists the fields, and anything unexpected is a generic 500, logged
-  in full on the server. The handlers write fixed messages and never echo an exception's text or the
+  (malformed JSON, wrong method or media type, unknown route) are problems too. A missing item is a
+  404 with a stable `type`, validation lists the fields, and anything unexpected is a generic 500,
+  logged in full on the server. The handlers write fixed messages and never echo an exception's text or the
   requested id in `detail`; `instance` is the request path, URL-encoded, as RFC 9457 defines it.
 - **201 with a `Location` header** on create; 204 on delete.
 - **`@WebMvcTest` tests**: fast, no server, and they pin status codes and JSON shape.

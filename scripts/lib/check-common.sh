@@ -1,4 +1,5 @@
-# Shared by every pattern's check.sh. POSIX sh. Each check prints PASS, FAIL or SKIP (not run);
+# Shared by every pattern's check.sh. GM_SCHEMA_ONLY=1 skips the slow steps (build, run, validate)
+# for a job that only validates cards; such a run proves nothing about the skeletons. POSIX sh. Each check prints PASS, FAIL or SKIP (not run);
 # finish exits non-zero on any FAIL. A SKIP is never counted as a pass in a summary.
 status=0
 
@@ -18,6 +19,10 @@ credential_grep() {
 
 gradle_test() {
     echo "[gradle test] $1"
+    if [ "${GM_SCHEMA_ONLY:-0}" = "1" ]; then
+        echo "SKIP (schema-only run): gradle test"
+        return 0
+    fi
     if ! command -v gradle >/dev/null 2>&1; then
         skip "no gradle on PATH"
         return 0

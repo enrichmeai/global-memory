@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.net.URI;
 import java.util.Map;
@@ -21,7 +22,9 @@ import java.util.stream.Collectors;
 /**
  * Every error as an RFC 9457 problem detail. Spring MVC's own errors (malformed JSON, unknown
  * route, wrong method or media type) come from {@link ResponseEntityExceptionHandler}; this class
- * adds the application's own and a catch-all. No exception message or request value is echoed.
+ * adds the application's own, an unknown route and a catch-all. Every {@code detail} is a fixed
+ * message: no exception text or request value is echoed. {@code instance} is the request path,
+ * URL-encoded, as RFC 9457 defines it.
  */
 @RestControllerAdvice
 public class ErrorAdvice extends ResponseEntityExceptionHandler {
@@ -47,6 +50,16 @@ public class ErrorAdvice extends ResponseEntityExceptionHandler {
                         f -> f.getDefaultMessage() == null ? "invalid" : f.getDefaultMessage(), (a, b) -> a));
         p.setProperty("fields", fields);
         return ResponseEntity.badRequest().body(p);
+    }
+
+    /** An unknown route: Spring's default detail would echo the path, so it is replaced. */
+    @Override
+    protected ResponseEntity<Object> handleNoResourceFoundException(NoResourceFoundException e, HttpHeaders headers,
+                                                                   HttpStatusCode status, WebRequest request) {
+        ProblemDetail p = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, "No such resource.");
+        p.setType(URI.create("urn:problem:not-found"));
+        p.setTitle("Not found");
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(p);
     }
 
     /** Anything unexpected: logged in full here, a generic 500 to the caller. */
