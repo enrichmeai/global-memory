@@ -30,6 +30,14 @@ jobs:
         with:
           terraform_version: "1.9.8"
           terraform_wrapper: false
+      - name: Install actionlint
+        run: |
+          cd "$RUNNER_TEMP"
+          curl -fsSLO https://github.com/rhysd/actionlint/releases/download/v1.7.7/actionlint_1.7.7_linux_amd64.tar.gz
+          # From the release's actionlint_1.7.7_checksums.txt.
+          echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  actionlint_1.7.7_linux_amd64.tar.gz" | sha256sum -c -
+          tar xzf actionlint_1.7.7_linux_amd64.tar.gz actionlint
+          echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: Run every pattern's check.sh
         run: |
           set -e
@@ -68,5 +76,5 @@ jobs:
           cp global-memory/memory.yaml "$flat/"
           cp -R global-memory/scripts/. "$flat/scripts/"
           for d in global-memory/patterns/*/*/; do cp -R "$d" "$flat/patterns/"; done
-          for c in "$flat"/patterns/*/check.sh; do sed -i 's#\.\./\.\./\.\./scripts#../../scripts#; s#\.\./\.\./language/#../#' "$c"; done
+          for c in "$flat"/patterns/*/check.sh; do sed -E -i 's#\.\./\.\./\.\./scripts#../../scripts#; s#\.\./\.\./(language|architecture|cloud|ci)/#../#g' "$c"; done
           bash penstock/scripts/check-cards.sh --root "$flat"
