@@ -19,6 +19,6 @@ inputs:
   - the registry, if not GHCR
   - the Java and Gradle versions (from the language layer)
 verified-against:
-  tag: actionlint-1.7.7 gradle-8.14 java-21 setup-gradle-v4 build-push-action-v6; check run locally (docker steps SKIP), CI pending
+  tag: actionlint-1.7.7 gradle-8.14 java-21 setup-gradle-v4 build-push-action-v6; check incl. image build and smoke.sh green in CI on PR #2 (run 39633247127)
   date: 2026-10-21
 supersedes: ~
