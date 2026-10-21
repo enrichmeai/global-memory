@@ -1,0 +1,58 @@
+name: check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1"   # weekly: a pattern can go stale when its tools move on
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  patterns:
+    runs-on: ubuntu-latest
+    env:
+      GM_REQUIRE_ALL: "1"   # a check that cannot run here fails; nothing passes untested
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.14"
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.9.8"
+          terraform_wrapper: false
+      - name: Run every pattern's check.sh
+        run: |
+          set -e
+          for c in patterns/*/check.sh; do
+            echo "::group::$c"
+            sh "$c"
+            echo "::endgroup::"
+          done
+
+  cards:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: global-memory
+      - uses: actions/checkout@v4
+        with:
+          repository: enrichmeai/penstock
+          path: penstock
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate cards against memory format v1 (Penstock's checker)
+        run: |
+          pip install pyyaml jsonschema
+          bash penstock/scripts/check-cards.sh --root "$GITHUB_WORKSPACE/global-memory"

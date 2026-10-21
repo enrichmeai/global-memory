@@ -1,0 +1,25 @@
+id: gcp-cloud-run
+format: 1
+visibility: public
+version: 1
+triggers:
+  - gcp
+  - google cloud
+  - cloud run
+  - terraform
+  - deploy
+  - container
+  - secret manager
+  - artifact registry
+signatures:
+  - Dockerfile
+  - "**/infra/*.tf"
+inputs:
+  - the GCP project id and region
+  - the service name and the image tag to deploy
+  - which principals may call it (private by default)
+  - the secrets it needs, by name
+verified-against:
+  tag: terraform-1.9 google-provider-6.x eclipse-temurin-21 (validate and image build in CI)
+  date: 2026-10-21
+supersedes: ~

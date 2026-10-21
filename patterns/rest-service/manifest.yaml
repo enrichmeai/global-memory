@@ -1,0 +1,23 @@
+id: rest-service
+format: 1
+visibility: public
+version: 1
+triggers:
+  - rest api
+  - rest service
+  - crud
+  - endpoint
+  - controller
+  - http api
+  - problem details
+signatures:
+  - "**/src/main/java/**/*Controller.java"
+  - "**/src/main/java/**/ErrorAdvice.java"
+inputs:
+  - the resource (here "items") and its fields
+  - which operations it needs (list, get, create, delete)
+  - where it is stored (this layer keeps it in memory behind a service interface)
+verified-against:
+  tag: spring-boot-3.5.16 java-21 (on java21-spring-boot v1)
+  date: 2026-10-21
+supersedes: ~
