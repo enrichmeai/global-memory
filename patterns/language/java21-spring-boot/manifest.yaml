@@ -1,0 +1,23 @@
+id: java21-spring-boot
+format: 1
+visibility: public
+version: 1
+triggers:
+  - java
+  - java 21
+  - spring boot
+  - spring
+  - gradle
+  - new service
+  - new java project
+signatures:
+  - build.gradle
+  - settings.gradle
+  - "**/src/main/java/**/Application.java"
+inputs:
+  - the service name (rootProject.name) and the Java package
+  - which starters it needs beyond web, validation and actuator
+verified-against:
+  tag: spring-boot-3.5.16 gradle-8.14 java-21
+  date: 2026-10-21
+supersedes: ~

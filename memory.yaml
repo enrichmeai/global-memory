@@ -1,0 +1,4 @@
+# Global memory's boundary (memory format v1, the same format as Penstock's cards).
+# Everything here is public and free: patterns anyone may load, whatever their project.
+format: 1
+visibility: public
