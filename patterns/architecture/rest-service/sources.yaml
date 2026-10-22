@@ -1,0 +1,6 @@
+# Where this pattern's decisions come from (see language/java21-spring-boot/sources.yaml).
+sources:
+  - url: https://docs.spring.io/spring-framework/reference/web/webmvc/mvc-ann-rest-exceptions.html
+    what: Error responses with ProblemDetail and ResponseEntityExceptionHandler.
+  - url: https://docs.spring.io/spring-boot/reference/testing/spring-boot-applications.html
+    what: Testing a Spring Boot application, including MockMvc and replacing a bean with a mock.

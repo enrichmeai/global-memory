@@ -36,6 +36,7 @@ patterns/<category>/<id>/
   manifest.yaml   id, version, triggers, signatures, inputs, verified-against {tag, date}
   skeleton/       the files, with real defaults; PATTERN.md lists what to rename
   check.sh        exits 0 when the skeleton, in a clean directory, still works
+  sources.yaml    the official docs and release pages its decisions rest on (url, what)
 ```
 
 ## Rules
@@ -44,7 +45,10 @@ patterns/<category>/<id>/
   `GM_REQUIRE_ALL=1`, so a step that could not run is a failure there, never a silent pass.
 - **Everything here is public.** No credentials, no customer specifics; each check scans its skeleton.
 - **`verified-against`** names the tool and framework versions the pattern was last proven with,
-  and the date.
+  and the date. **`sources.yaml`** says where to look when they move. CI checks its shape on
+  every PR, and that every url resolves weekly. A refresh that reads these and proposes updates only
+  as PRs with a passing check is planned
+  ([penstock#196](https://github.com/enrichmeai/penstock/issues/196)).
 - **Cards follow memory format v1**, the same schema as Penstock's (`check-cards.sh --root` validates them).
 
 ## Using a pattern by hand

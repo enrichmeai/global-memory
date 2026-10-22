@@ -38,6 +38,13 @@ jobs:
           echo "023070a287cd8cccd71515fedc843f1985bf96c436b7effaecce67290e7e0757  actionlint_1.7.7_linux_amd64.tar.gz" | sha256sum -c -
           tar xzf actionlint_1.7.7_linux_amd64.tar.gz actionlint
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
+      - name: Check every pattern's sources.yaml (shape; the urls are checked by the sources job)
+        env:
+          GM_SCHEMA_ONLY: "1"
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || python3 -m pip install --user --quiet pyyaml
+          sh scripts/check-sources.sh
+          sh scripts/test-check-sources.sh
       - name: Run every pattern's check.sh
         run: |
           set -e
@@ -46,6 +53,20 @@ jobs:
             sh "$c"
             echo "::endgroup::"
           done
+
+  # Every source url resolves. Weekly and on demand only: a third-party docs site having a bad day
+  # must not block an unrelated PR. A red weekly run is the signal that a pattern's sources moved.
+  sources:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    env:
+      GM_REQUIRE_ALL: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Every source url resolves
+        run: |
+          python3 -c 'import yaml' 2>/dev/null || python3 -m pip install --user --quiet pyyaml
+          sh scripts/check-sources.sh
 
   cards:
     runs-on: ubuntu-latest
