@@ -10,6 +10,12 @@
 4. Write `check.sh` using `scripts/lib/check-common.sh`. It must fail on a broken skeleton:
    show that once (break a test, see FAIL) before opening the PR.
 5. Fill in `manifest.yaml`, with `verified-against` naming the versions you proved it with.
+   List in `sources.yaml` the official docs and release pages the decisions rest on, each with a
+   `url` (https) and `what` it backs. It is a file of its own because memory format v1's manifest
+   takes no extra keys. `scripts/check-sources.sh` checks the shape (blocking on every PR) and that
+   every url resolves (the weekly `sources` job, and on demand: Actions → check → Run workflow).
+   A host that answers every path (a single-page docs site) only proves the host is up, so check
+   the page yourself when you add it.
 6. Open a PR with the `check.sh` output pasted in. CI must be green.
 
 Only build a layer from something that has really run. A pattern is a record of what worked, not a guess.

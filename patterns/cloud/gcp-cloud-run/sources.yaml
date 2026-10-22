@@ -1,0 +1,12 @@
+# Where this pattern's decisions come from (see language/java21-spring-boot/sources.yaml).
+sources:
+  - url: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/cloud_run_v2_service
+    what: The google_cloud_run_v2_service resource, its arguments and deletion_protection.
+  - url: https://cloud.google.com/run/docs/container-contract
+    what: What Cloud Run expects of a container, including the PORT variable.
+  - url: https://cloud.google.com/run/docs/configuring/healthchecks
+    what: Startup and liveness probes on Cloud Run.
+  - url: https://releases.hashicorp.com/terraform/
+    what: Terraform releases, for the version CI validates with.
+  - url: https://hub.docker.com/_/eclipse-temurin
+    what: The eclipse-temurin images and their tags (the JRE 21 runtime).

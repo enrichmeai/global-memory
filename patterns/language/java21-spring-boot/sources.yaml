@@ -1,0 +1,13 @@
+# Where this pattern's decisions come from: the pages to re-read when a version or a rule moves.
+# A refresh that reads them is planned (penstock#196).
+sources:
+  - url: https://repo.maven.apache.org/maven2/org/springframework/boot/spring-boot/maven-metadata.xml
+    what: Spring Boot releases. The pattern tracks the 3.5.x line; milestones and other lines are not updates.
+  - url: https://docs.spring.io/spring-boot/system-requirements.html
+    what: The Java and Gradle versions Spring Boot supports.
+  - url: https://plugins.gradle.org/m2/io/spring/dependency-management/io.spring.dependency-management.gradle.plugin/maven-metadata.xml
+    what: The io.spring.dependency-management plugin's releases.
+  - url: https://services.gradle.org/versions/all
+    what: Gradle releases, for the version the skeleton is built with.
+  - url: https://docs.spring.io/spring-boot/reference/actuator/endpoints.html
+    what: Actuator health groups and the liveness and readiness probes.

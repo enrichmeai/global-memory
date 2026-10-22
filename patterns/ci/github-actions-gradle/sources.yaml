@@ -1,0 +1,14 @@
+# Where this pattern's decisions come from (see language/java21-spring-boot/sources.yaml).
+sources:
+  - url: https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions
+    what: Workflow syntax, including permissions, concurrency and job outputs.
+  - url: https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
+    what: Pushing to GHCR with the job's token.
+  - url: https://github.com/actions/setup-java/releases
+    what: actions/setup-java releases.
+  - url: https://github.com/gradle/actions/releases
+    what: gradle/actions (setup-gradle) releases.
+  - url: https://github.com/docker/build-push-action/releases
+    what: docker/build-push-action releases.
+  - url: https://github.com/rhysd/actionlint/releases
+    what: actionlint releases, for the version CI lints with.
